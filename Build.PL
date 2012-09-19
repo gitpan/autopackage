@@ -19,13 +19,14 @@ my %module_build_args = (
     "Darin McBride <dmcbride\@cpan.org>"
   ],
   "dist_name" => "autopackage",
-  "dist_version" => "0.001",
+  "dist_version" => "0.01",
   "license" => "perl",
   "module_name" => "autopackage",
   "recommends" => {},
   "recursive_test_files" => 1,
   "requires" => {
-    "Filter::Simple" => 0,
+    "B::Hooks::Parser" => "0.08",
+    "Carp" => 0,
     "strict" => 0,
     "warnings" => 0
   },

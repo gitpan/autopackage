@@ -1,6 +1,6 @@
 package autopackage;
 {
-  $autopackage::VERSION = '0.001';
+  $autopackage::VERSION = '0.01';
 }
 use strict;
 use warnings;
@@ -8,27 +8,31 @@ use warnings;
 # ABSTRACT: Automatically set your package based on how your module was loaded.
 
 
-use Filter::Simple sub {
+use B::Hooks::Parser  0.08   qw();
+use Carp              0      qw(confess);
+
+sub import {
 
     # figure out where we're called from
-    my ($i, $pkg, $filename) = (0);
-    do {
-        ($pkg, $filename) = caller($i++);
-    } while ($pkg =~ /^Filter/);
+    my (undef, $filename) = caller(0);
 
-    # figure out where it got loaded in @INC.
-    for my $inc (@INC)
+    # figure out where it got loaded via %INC.
+    my $pkg;
+    for my $k (sort keys %INC)
     {
-        if (substr($filename, 0, length($inc)) eq $inc)
+        if ($INC{$k} eq $filename)
         {
-            $pkg = substr($filename, length($inc)+1);
+            $pkg = $k;
             $pkg =~ s<[/\\]><::>g;
             $pkg =~ s<\.pm$><>i; # can this be uppercase on some platforms?
             last;
         }
     }
 
-    s/^/package $pkg;/;
+    confess("autopackage could not determine package for filename '$filename', died")
+        unless defined $pkg;
+
+    B::Hooks::Parser::inject("; package $pkg;");
 };
 
 1;
@@ -42,7 +46,11 @@ autopackage - Automatically set your package based on how your module was loaded
 
 =head1 VERSION
 
-version 0.001
+version 0.01
+
+=head1 SYNOPSIS
+
+    use autopackage;
 
 =head1 DESCRIPTION
 
@@ -62,25 +70,11 @@ This really works well for plugins where the name of the module is
 figured out dynamically anyway, other modules are harder to rename.  But
 it still can be useful there as it's one less thing to change.
 
-=head1 SYNOPOSIS
-
-    use autopackage;
-
 =head1 AUTHOR
 
 Darin McBride, C<< <dmcbride at cpan.org> >>
 
 =head1 BUGS
-
-If your @INC has two paths inside each other, stop it.  But if you have to,
-this may confuse this module.  It scans your @INC to figure out what to
-eliminate from the filename, and if two paths in @INC overlap, it may
-get this wrong.
-
-For example, if you have @INC with C</foo> and C</foo/bar>, in that order,
-and your module is C</foo/bar/MyModule.pm>, autopackage will think that
-the package name should be C<bar::MyModule> when it's really
-C<MyModule>.  If your @INC is reversed, this bug shouldn't show up.
 
 This also probably will break CPAN's indexer.  So it may not be so useful
 for packages you want CPAN to index.

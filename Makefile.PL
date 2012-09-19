@@ -24,11 +24,12 @@ my %WriteMakefileArgs = (
   "LICENSE" => "perl",
   "NAME" => "autopackage",
   "PREREQ_PM" => {
-    "Filter::Simple" => 0,
+    "B::Hooks::Parser" => "0.08",
+    "Carp" => 0,
     "strict" => 0,
     "warnings" => 0
   },
-  "VERSION" => "0.001",
+  "VERSION" => "0.01",
   "test" => {
     "TESTS" => "t/*.t"
   }
